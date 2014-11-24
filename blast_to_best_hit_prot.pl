@@ -165,7 +165,7 @@ while (my $seq_obj = $seqio_obj->next_seq){
 		# get "real" reading frame and substract 1 to convert to perl reading frames (0,1,2)
 		$fram =~ /-*(\d)/;
 		$f = $1 - 1;
-		$header_out = "Lepidosire_$key";
+		$header_out = "$key";
 
 		# revcomp sequence if negative frame
 		if ( $fram =~ /-\d/ ) {

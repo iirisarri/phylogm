@@ -22,10 +22,13 @@ use Bio::SeqIO;
 
 ## OPTIONS ##
 # There is the possibility of requiring single copy genes to be present in (i) ALL ref species
-# or (ii) only in a subset (e.g. >70%, >80%, <90%). This option is hard-coded. 
+# or (ii) only in a subset (e.g. >70%, >80%, >90%). This option is hard-coded. 
 # To select option 1 or 2, go the specific line and comment out the if statement that that does not apply
 
 my $usage = "filter_orthodb_single_copy.pl orthodb_file ref_species fasta_source_file > stdout\n";
+
+# usage example:
+# perl /computation/iker/software/scripts/phylogm/filter_orthodb_2fasta.pl ODB8_EukOGs_genes_Vertebrata-1261581.txt ref_species_20 /storage/iker/ensembl75_proteomes/all_proteomes_from_ensembl75_protids.fa
 
 my $orthodb_file = $ARGV[0];
 my $reference_set = $ARGV[1];
@@ -141,7 +144,7 @@ foreach my $group ( keys %orthoDB ) {
     #if (  $single_copy_in_ref_length == $ref_species_length ) {
 
     # SINGLE COPY FOR AT LEAST >70% OF THE SPECIES IN THE REF SET
-    if (  $single_copy_in_ref_length > ($ref_species_length * 0.7)  ) {
+    if (  $single_copy_in_ref_length > ($ref_species_length * 0.8)  ) {
 
 	# count number of groups
 	$orthogroup_count++;

@@ -13,7 +13,7 @@ use Data::Dumper;
 
 ## OPTIONS ##
 # There is the possibility of requiring single copy genes to be present in (i) ALL ref species
-# or (ii) only in a subset (e.g. >70%, >80%, <90%). This option is hard-coded. 
+# or (ii) only in a subset (e.g. >70%, >80%, >90%). This option is hard-coded. 
 # To select option 1 or 2, go the specific line and comment out the if statement that that does not apply
 
 my $usage = "filter_orthodb_single_copy.pl orthodb_file ref_species > stdout\n";
@@ -114,10 +114,10 @@ foreach my $group ( keys %orthoDB ) {
     # comment out one option or the other to require all species or only a % of them to be present
 
     # SINGLE COPY FOR ALL SPECIES IN THE REF SET
-    #if (  $single_copy_in_ref_length == $ref_species_length ) {
+    if (  $single_copy_in_ref_length == $ref_species_length ) {
 
     # SINGLE COPY FOR AT LEAST >70% OF THE SPECIES IN THE REF SET
-    if (  $single_copy_in_ref_length > ($ref_species_length * 0.7)  ) {
+#    if (  $single_copy_in_ref_length > ($ref_species_length * 0.9)  ) {
 
 	# count number of groups
 	$orthogroup_count++;

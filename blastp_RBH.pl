@@ -9,32 +9,42 @@ use Bio::DB::Fasta;
 # Iker Irisarri. Konstanz, January 2015  
 # modified version of parse_blast_best_hit_prot.pl to parse blastp reports (it does not translate hits)
 # it checks for reciprocal blast best hits
-# option to use a filter for an evalue threshold
+# option to use a filter for an evalue threshold. If undefined as an option, evalue=1e-3
+# OUTPUT: new output file created for each orthogroup containing the ortholog of the blasted species
+
 # IMPORTANT: It will output hits from $blast_report_1 (order in which reports are given is important!)
-# originally for getting comps of reciprocal best hits to extract from fasta files (transcriptomes)
-# translate them using the correct reading frame
+# IMPORTANT: check how query and hit names are handled (perl -d) cause for different fasta files primary_id and hit->name will be different
+# originally for calculating RBBH of vert queries vs. callorhinchus proteome and extracting seq from proteome
 
 
-my $usage = "blastp_RBH.pl blast_report_1 blast_report_2 source_fasta > output.fa\n";
+my $usage = "blastp_RBH.pl blast_report_1 blast_report_2 source_fasta (evalue threshold)> output.fa\n";
 my $blast_report_1 = $ARGV[0] or die $usage;
 my $blast_report_2 = $ARGV[1] or die $usage;
 my $in_fasta = $ARGV[2] or die $usage;
+my $evalue_threshold =  $ARGV[3];
 
+if ( !defined($evalue_threshold) ) {
+    
+    $evalue_threshold = 1e-3;
+
+}
 
 # process best hits from blast reports by sending it the subroutine (= blast_to_best_hit_prot.pl)
-print STDERR "\nprocessing blast report #1...\n";
+print STDERR "\nprocessing blast report #1 $blast_report_1...\n";
 
 my $blast_1_ref = blast_to_hash($blast_report_1);
 
-print STDERR "processing blast report #2...\n";
+print STDERR "processing blast report #2 $blast_report_2...\n";
 my $blast_2_ref = blast_to_hash($blast_report_2);
 
 # de-reference hashes
 my %blast_1 = %{ $blast_1_ref };
 my %blast_2 = %{ $blast_2_ref };
 
-# count original number of queries in blast report #1
-my $original_query_num = scalar keys %blast_1;
+my $original_query_num = `grep -c "Query=" $blast_report_1`;
+
+# count original number of queries that have significant hits in blast report #1
+my $signif_query_num = scalar keys %blast_1;
 
 #print Dumper \$blast_1_ref;
 #print Dumper \$blast_2_ref;
@@ -62,11 +72,12 @@ foreach my $query_1 ( keys %blast_1 ) {
 
 # count number of queries in blast report #1 after deleting non-RBBH 
 my $query_num_after_delete = scalar keys %blast_1;
-my $percent = ($query_num_after_delete / $original_query_num ) * 100;
+my $percent = ($query_num_after_delete / $signif_query_num ) * 100;
 
-print STDERR "\noriginal queries: $original_query_num\n";
-print STDERR "number of RBBHs: $query_num_after_delete ($percent %)\n\n";
-print STDERR "extracting RBBH from blast report #1...\n";
+print STDERR "\noriginal number of queries: $original_query_num\n";
+print STDERR "of which they have significant hits: $signif_query_num\n";
+print STDERR "number of significant RBBHs: $query_num_after_delete ($percent %)\n\n";
+print STDERR "extracting RBBH (blast report #1) from source fasta...\n";
 
 ###########################################
 # extract_from_fasta_by_name && translate #
@@ -79,17 +90,28 @@ my $seqio_obj = Bio::SeqIO->new('-file' => "<$in_fasta",
 
 # extract best hits from source fasta
 while (my $seq_obj = $seqio_obj->next_seq){
+    
+    # primary id would be 'gi|632933636|ref|XP_007888002.1|'
+    $seq_obj->primary_id =~ /gi\|\d+\|(ref\|\w+\.*\w*\|)/;
+    my $seqname = $1;
 
-    my $seqname = $seq_obj->primary_id;
-
-    foreach my $key ( sort { $a cmp $b } keys %blast_1 ) {
-	# get best hits from source fasta
+#    foreach my $key ( sort { $a cmp $b } keys %blast_1 ) {
+    foreach my $key ( keys %blast_1 ) {
+    # get best hits from source fasta
 	if ( $seqname eq $blast_1{$key}{'blast_info'}[0] ) {
 
-	    print STDOUT ">", $seqname, "\n";
-	    print STDOUT $seq_obj->seq, "\n";
+	    # get ortholog group
+	    $key =~ /(EOG\w+)/;
+	    my $orthogroup = $1;
+	    my $outfile = $orthogroup . "_callorhinchus.fa";
+
+	    open (OUT, ">", "$outfile");
+
+            print OUT ">Callorhinchus_milii\n";
+	    print OUT $seq_obj->seq, "\n";
 	    # scape foreach loop of %blast_1 once the sequence is found
 	    next;
+	    close(OUT);
 	}
     }
 }
@@ -109,17 +131,31 @@ sub blast_to_hash {
 
     my %hash;
 
-	# initialize evalues as 1
-	my $significance1 = 1;
-	my $evalue1 = 1;
+	# initialize evalues as threshold
+	my $significance1 = $evalue_threshold;
+	my $evalue1 = $evalue_threshold;
 
 	while( my $result = $report->next_result ) {
 
-		# get query name
-		my $query = $result->query_name;
+	    # get query name and extract ref|| name if present
+            # blastp output of queries vs callorhinchus will have gi|\d+|ref|\w+|
+	    # but hits in callorhinchus vs queries will have only |ref|\w+|
+	    my $query;
+            if ( $result->query_name =~ /gi\|\d+\|ref\|\w+\.*\w*\|/ ) {
 
-		# reasign 1 to evalue for each new result 
-		$significance1 = 1;
+		$result->query_name =~ /gi\|\d+\|(ref\|\w+\.*\w*\|)/;
+#		$result->query_name =~ /(ref.+)/;
+		$query = $1;
+
+	    }
+	    else {
+
+		$query = $result->query_name;
+
+	    }
+
+		# reasign evalue to the threshold for each new result 
+		$significance1 = $evalue_threshold;
 
 		while( my $hit = $result->next_hit ) {
 
@@ -131,19 +167,29 @@ sub blast_to_hash {
 			# for next hits, compares with evalue of previous hit
 			if ( $significance < $significance1 ) {
 
-				# assing new evalue to $value1 (for comparison)
-				$significance1 = $significance;
+			    # assing new evalue to $value1 (for comparison)
+			    $significance1 = $significance;
 
-				#my $hit_name = $hit->name;
-				# to remove "lcl|" that appears in hit name
+			    # to remove "lcl|" that appears sometimes in hit name
+			    # blastp output of callorhinchus vs queries will have lcl| before the hits 
+				
+			    my $hit_name;
+			    if ( $hit->name =~ /lcl\|.+/ ) {
 				$hit->name =~ /lcl\|(.+)/;
-				my $hit_name = $1;
-				my $bits1 = $hit->bits;
+				$hit_name = $1;
+			    }
+			    else {
+				
+				$hit_name = $hit->name;
+				
+			    }
+			
+			    my $bits1 = $hit->bits;
 
-				$evalue1 = 1;
+			    $evalue1 = $evalue_threshold;
 
-				# store info into hash of hashes
-				$hash{$query}{'blast_info'} = [$hit_name,$bits1,$significance];
+			    # store info into hash of hashes
+			    $hash{$query}{'blast_info'} = [$hit_name,$bits1,$significance];
 
 			}
 		}

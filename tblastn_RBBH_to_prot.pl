@@ -18,6 +18,10 @@ use Bio::DB::Fasta;
 # and translate them using the correct reading frame
 # IMPORTANT: define fasta header to be printed into output files
 
+########
+# Note: check if all seq are printed when there is reading frame shift
+#######
+
 my $usage = "tblastn_RBBH_to_prot.pl tblastn_rep_1 blastx_rep_2 source_fasta species_name (evalue threshold) > output.fa\n";
 my $blast_report_1 = $ARGV[0] or die $usage;
 my $blast_report_2 = $ARGV[1] or die $usage;

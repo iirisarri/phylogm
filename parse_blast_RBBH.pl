@@ -15,10 +15,10 @@ use Bio::DB::Fasta;
 # It does not check for frame shifts, so it can be used for all flavours of BLAST
 # Allows repeated queries (e.g. several ORF estiamted by transdecoder on the same transcfript) by appending a number
 
-my $usage = "blast_RBH_to_prot.pl blast_report_1 blast_report_2 source_fasta > output.fa\n";
+my $usage = "blast_RBH_to_prot.pl blast_report_1 blast_report_2 evalue_threshold > output.fa\n";
 my $blast_report_1 = $ARGV[0] or die $usage;
 my $blast_report_2 = $ARGV[1] or die $usage;
-
+my $evalue_threshold = $ARGV[2] or die $usage;
 
 # process best hits from blast reports by sending it the subroutine (= blast_to_best_hit_prot.pl)
 print STDERR "\nprocessing blast report #1...\n";
@@ -69,7 +69,8 @@ foreach my $query_1 ( keys %blast_1 ) {
 
 foreach my $key ( keys %blast_1 ) {
 
-    print $key, "\t", $blast_1{$key}{'blast_info'}[0], "\n";
+    #print $key, "\t", $blast_1{$key}{'blast_info'}[0], "\n";
+    print $key, "\t", $blast_1{$key}{'blast_info'}[0], "\t", $blast_1{$key}{'blast_info'}[2], "\n";
 
 }
 
@@ -115,16 +116,18 @@ sub blast_to_hash {
 
 			# get evalue for that hit
 			my $significance = $hit->significance;
+			
+			if ( $significance < $evalue_threshold ) {
 
-			# compare evalue of this hit with that from previous hits
-			# for first hit, compares against evalue of 1
-			# for next hits, compares with evalue of previous hit
-			if ( $significance < $significance1 ) {
+			    # compare evalue of this hit with that from previous hits
+			    # for first hit, compares against evalue of 1
+			    # for next hits, compares with evalue of previous hit
+			    if ( $significance < $significance1 ) {
 
 				# assing new evalue to $value1 (for comparison)
 				$significance1 = $significance;
 
-			    my $hit_name = $hit->name;
+				my $hit_name = $hit->name;
 				# to remove "lcl|" that appears in hit name
 				#$hit->name =~ /lcl\|(.+)/;
 				#my $hit_name = $1;
@@ -188,7 +191,7 @@ sub blast_to_hash {
 				# hash 'frames' would allow translating the same query in multiple frames
 				# to try to correct from frameshifts
 				#$hash{$query}{'frames'} = [@frames];
-		#	    }
+			    }
 			}
 		}
 	}

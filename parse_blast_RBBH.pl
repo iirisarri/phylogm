@@ -15,7 +15,7 @@ use Bio::DB::Fasta;
 # It does not check for frame shifts, so it can be used for all flavours of BLAST
 # Allows repeated queries (e.g. several ORF estiamted by transdecoder on the same transcfript) by appending a number
 
-my $usage = "blast_RBH_to_prot.pl blast_report_1 blast_report_2 evalue_threshold > output.fa\n";
+my $usage = "parse_blast_RBBH.pl blast_report_1 blast_report_2 evalue_threshold > output.fa\n";
 my $blast_report_1 = $ARGV[0] or die $usage;
 my $blast_report_2 = $ARGV[1] or die $usage;
 my $evalue_threshold = $ARGV[2] or die $usage;

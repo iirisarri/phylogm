@@ -74,6 +74,7 @@ for (my $i=0; $i<$num_replicates; $i++) {
 		# choose random gene from @genes
 		my $gene = $genes[rand @genes];
 
+		my %new = ();
 		my $new_seq_length = 0;
 
 		# read file in with seqio
@@ -89,25 +90,41 @@ for (my $i=0; $i<$num_replicates; $i++) {
 			$new_seq_length = $inseq->length;
 		}
 
-		# add sequence length of new alignment
-		$total_length += $new_seq_length;
-	
 		# add sequences to hash %concat
-		foreach my $key ( keys %new ) {
+		foreach my $k ( keys %new ) {
 
 			# create new taxa if not existing in %concat
-			if ( !exists $concat{$key} ) {
-	
-				$concat{$key} = $new{$key};
+			if ( !exists $concat{$k} ) {
+
+			# prior to concatenation, fill previous positions with "?s" for $total_length
+			# for gene #1 this $total_concat_length == 0
+			my $seq1 = '?' x $total_length . $new{$k};
+
+			$concat{$k} = $seq1;
+
 			}
 			else {
 	
 				# concatenate
-				my $seq2 = $concat{$key} . $new{$key};
+				my $seq2 = $concat{$k} . $new{$k};
 				# reassign
-				$concat{$key} = $seq2;
+				$concat{$k} = $seq2;
 			}
 		}
+		
+		# fill with ?s any taxa present in %concat but not in %new
+		foreach my $j ( keys %concat ) {
+	
+			if ( !exists $new{$j} ) {
+		
+				my $seq3 = $concat{$j} . '?' x $new_seq_length;
+				$concat{$j} = $seq3;
+			}
+		}
+
+		# add sequence length of new alignment
+		$total_length += $new_seq_length;
+	
 		# remove gene from @genes_all
 		@genes = grep { $_ ne $gene } @genes;
 

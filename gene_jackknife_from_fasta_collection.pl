@@ -42,7 +42,7 @@ print SUM "Outfile name = $outfile_pattern\n\n";
 # read input files from current directory
 # only files with the provided extension will be read
 opendir(DIR, ".");
-my @genes_all = grep(/\.fa$/,readdir(DIR));
+my @genes_all = grep(/\.$input_file_extension$/,readdir(DIR));
 closedir(DIR);
 
 

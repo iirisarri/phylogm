@@ -86,6 +86,9 @@ for (my $i=0; $i<$num_replicates; $i++) {
 		# store sequences of new file into hash %new
 		while (my $inseq = $seqio_obj->next_seq) {
 
+			# scape empty sequences in present
+			next if ( $inseq->seq =~ /^[-XNn?]*$/ );
+
 			$new{$inseq->primary_id}=$inseq->seq;
 			$new_seq_length = $inseq->length;
 		}

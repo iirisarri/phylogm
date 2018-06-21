@@ -20,7 +20,7 @@ use Bio::SeqIO;
 my $usage = "perl check_fasta_header_for_scafos.pl *.fasta\n";
 my @infiles = @ARGV or die $usage;
 
-open (OUTERR, ">check_fasta_header_for_scafos.err") or die "Can't create check_fasta_header_for_scafos.err\n";
+open (OUTERR, ">>check_fasta_header_for_scafos.err") or die "Can't create check_fasta_header_for_scafos.err\n";
 
 foreach my $infile ( @infiles ) {
 

@@ -45,12 +45,6 @@ foreach my $infile ( @infiles ) {
         	$seqname =~ tr/\\/_/;
 	        print OUTERR "\t$seqname\n\n";     
         }
-        if ( $seqname =~ /.*?\/.*?/g ) {
-        
-        	print OUTERR "\t$seqname\n\n\t\treplaced by:\n\n";
-        	$seqname =~ tr/\\/_/;
-	        print OUTERR "\t$seqname\n\n";     
-        }
         if ( $seqname =~ /.*?\|.*?/g ) {
         
         	print OUTERR "\t$seqname\n\n\t\treplaced by:\n\n";

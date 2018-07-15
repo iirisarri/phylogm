@@ -108,7 +108,7 @@ foreach my $part ( sort keys %partitions ) {
 	
 	# for first alignment
 	if ( $part == 1 ) {
-		print OUT "$datatype, $aln = 1 - $len\n";
+		print OUT "$datatype, $aln = 1-$len\n";
 		
 		#update $prev_end
 		$prev_end = $len;
@@ -118,7 +118,7 @@ foreach my $part ( sort keys %partitions ) {
 
 		my $start = $prev_end + 1;
 		my $end = $prev_end + $len;
-		print OUT "$datatype, $aln = $start - $end\n";
+		print OUT "$datatype, $aln = $start-$end\n";
 		
 		# update $prev_end
 		$prev_end = $end;

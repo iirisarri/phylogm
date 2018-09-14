@@ -45,9 +45,15 @@ foreach my $infile (@infiles) {
 		my $kgb6 = uc $sequence;
 
 		# recode
-		$dayh6 =~ tr/AGPSTDENQHKRMIVLWFYC/11111222233344445556/; # Dayhoff
-		$sr6   =~ tr/APSTDENGQKRMIVLWCFYH/11112222333444455666/; # SR-6
-		$kgb6  =~ tr/AGPSDENQHKRTMILWFYCV/11112222222233345566/; # KGB-6
+		$dayh6 =~ tr/AGPSTDENQHKRMIVLWFYC/00000111122233334445/; # Dayhoff
+		$sr6   =~ tr/APSTDENGQKRMIVLWCFYH/00001111222333344555/; # SR-5
+		$kgb6  =~ tr/AGPSDENQHKRTMILWFYCV/00001111111122234455/; # KGB-5
+
+		# it will also change X and ? for gaps
+		$dayh6 =~ s/[X?]/-/g; # Dayhoff
+		$sr6   =~ s/[X?]/-/g; # SR-6
+		$kgb6  =~ s/[X?]/-/g; # KGB-6
+
 
 		$DAYH6{$inseq->primary_id}=$dayh6;
 		$SR6{$inseq->primary_id}=$sr6;

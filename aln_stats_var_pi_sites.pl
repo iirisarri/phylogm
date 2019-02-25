@@ -30,7 +30,7 @@ if ( $data_type eq "PROT" ) {
 
 	$ambiguous = "?";
 }
-if ( $data_type ne "DNA" ) {
+elsif ( $data_type ne "DNA" ) {
 
 	die $usage;
 }
